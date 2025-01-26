@@ -1,0 +1,45 @@
+services:
+  vite:
+    build: ./docker/php
+    volumes:
+      - ./src:/var/www
+      - storage:/var/www/storage/framework
+      - vendor:/var/www/vendor
+    ports:
+      - "5173:5173"
+    command: sh -c "npm run dev -- --host"
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www
+      - storage:/var/www/storage/framework
+      - vendor:/var/www/vendor
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+
+  php:
+    build: ./docker/php
+    volumes:
+      - ./src:/var/www
+      - storage:/var/www/storage/framework
+      - vendor:/var/www/vendor
+    working_dir: /var/www
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data: {}
+  vendor: {}
+  storage: {}
